@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useKasirStore } from "../store/useKasirStore";
 
 export interface Product {
   id: string;
@@ -34,7 +35,10 @@ export const useKasir = () => {
   const [products, setProducts] = useState<Product[]>([]); // State untuk data dari API
   const [loading, setLoading] = useState(true); // State untuk status loading
   const [error, setError] = useState<string | null>(null); // State jika gagal ambil data
+  const { keranjang, tambahItem, kurangiItem, hapusItem } = useKasirStore();
 
+
+  
   useEffect(()=>{
     const getData = async () => {
       try{
@@ -59,56 +63,21 @@ export const useKasir = () => {
     getData();
   }, []);
 
+  const totalBayar = keranjang.reduce((acc, item) => {
+    const hargaSatuan = products.find((o) => o.detail.nama === item.nama)?.harga || 0;
+    return acc + hargaSatuan * item.qty;
+  }, 0);
 
-  const [keranjang, setKeranjang] = useState<Keranjang[]>(() => {
-  const saved = localStorage.getItem('keranjang_simpanan');
-  return saved ? JSON.parse(saved) : [];
-});
 
-useEffect(() => {
-  localStorage.setItem('keranjang_simpanan', JSON.stringify(keranjang));
-}, [keranjang]);
+
+
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredProducts = products.filter((p) =>
     p.detail.nama.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const handleItem = (namaItem: string) => {
-    setKeranjang((prev) => {
-      const isExist = prev.find((item) => item.nama === namaItem);
-      if (isExist) {
-        return prev.map((item) =>
-          item.nama === namaItem ? { ...item, qty: item.qty + 1 } : item,
-        );
-      }
-
-      return [...prev, { nama: namaItem, qty: 1 }];
-    });
-  };
-
-  const KurangiItem = (namaItem: string) => {
-    setKeranjang((prev) => {
-      return prev
-        .map((item) =>
-          item.nama === namaItem ? { ...item, qty: item.qty - 1 } : item,
-        )
-        .filter((item) => item.qty > 0); // Jika qty jadi 0, hapus dari array
-    });
-  };
-
-  const HapusBaris = (namaItem: string) => {
-    const itemDicari = keranjang.find((item) => item.nama === namaItem);
-    if (itemDicari) {
-      setKeranjang((prev) => prev.filter((item) => item.nama !== namaItem)); // Buang item tersebut
-    }
-  };
-
-  const totalBayar = keranjang.reduce((acc, item) => {
-    const hargaSatuan =
-      products.find((o) => o.detail.nama === item.nama)?.harga || 0;
-    return acc + hargaSatuan * item.qty;
-  }, 0);
+  
 
   return {
     products, 
@@ -117,10 +86,10 @@ useEffect(() => {
     keranjang,      
     searchTerm,     
     setSearchTerm,  
-    filteredProducts,
-    handleItem,
-    KurangiItem,
-    HapusBaris,
+    filteredProducts: products,
+    handleItem: tambahItem,
+    KurangiItem: kurangiItem,
+    HapusBaris: hapusItem,
     totalBayar,
   };
 };
