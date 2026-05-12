@@ -1,6 +1,7 @@
 "use client"; // WAJIB: Karena kita menggunakan state dan hooks
 
 import { useKasir } from "../hooks/useKasir"; // Sesuaikan path-nya
+import Link from "next/link"; // Tambahkan ini
 
 export default function Home() {
   const kasir = useKasir();
@@ -11,6 +12,14 @@ export default function Home() {
   return (
     <main className="p-10">
       <h1 className="text-2xl font-bold mb-4">Startup Sayur Cirebon</h1>
+      <Link href="/checkout">
+          <button 
+            disabled={kasir.keranjang.length === 0}
+            className="bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 disabled:bg-gray-400"
+          >
+            Keranjang ({kasir.keranjang.length}) ➔
+          </button>
+        </Link>
       
       <div className="mb-6 p-4 bg-green-100 rounded-lg">
         <p className="font-semibold">Total Bayar: Rp {kasir.totalBayar.toLocaleString()}</p>
