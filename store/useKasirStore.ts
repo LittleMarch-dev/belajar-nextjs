@@ -5,7 +5,7 @@ import { Keranjang } from '../hooks/useKasir';
 
 interface KasirState {
   keranjang: Keranjang[];
-  tambahItem: (namaItem: string) => void;
+  tambahItem: (namaItem: string, hargaItem: number) => void;
   kurangiItem: (namaItem: string) => void;
   hapusItem: (namaItem: string) => void;
 }
@@ -15,7 +15,7 @@ export const useKasirStore = create<KasirState>()(
     (set) => ({
       keranjang: [],
 
-      tambahItem: (namaItem) => set((state) => {
+      tambahItem: (namaItem, hargaItem) => set((state) => {
         const isExist = state.keranjang.find((item) => item.nama === namaItem);
         if (isExist) {
           return {
@@ -24,7 +24,8 @@ export const useKasirStore = create<KasirState>()(
             ),
           };
         }
-        return { keranjang: [...state.keranjang, { nama: namaItem, qty: 1 }] };
+        // Masukkan hargaItem ke dalam objek baru di sini ✅
+        return { keranjang: [...state.keranjang, { nama: namaItem, qty: 1, harga: hargaItem }] };
       }),
 
       kurangiItem: (namaItem) => set((state) => ({

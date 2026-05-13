@@ -1,0 +1,19 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"] // Tambahkan ini jika menggunakan adapter SQLite di Prisma 7
+}
+
+datasource db {
+  provider = "sqlite"
+  // Hapus baris url di sini
+}
+
+model Order {
+  id        Int      @id @default(autoincrement())
+  nama      String
+  alamat    String
+  items     String   
+  createdAt DateTime @default(now())
+}

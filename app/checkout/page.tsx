@@ -1,44 +1,146 @@
-// app/checkout/page.tsx
 "use client";
 
 import { useKasir } from "../../hooks/useKasir";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { buatPesanan, type FormState } from "./action";
+import { useActionState } from "react"; // Hook baru
+
 
 export default function CheckoutPage() {
   const kasir = useKasir();
+  const { keranjang, totalBayar, handleItem, KurangiItem, HapusBaris } = kasir;
+  const [state, formAction, isPending] = useActionState<FormState | null, FormData>(buatPesanan, null);
 
   return (
-    <div className="p-10 max-w-2xl mx-auto">
-      <Link href="/" className="text-blue-500 mb-4 inline-block">← Kembali Belanja</Link>
-      
-      <h1 className="text-2xl font-bold mb-6">Detail Pesanan</h1>
-
-      {/* Ringkasan Belanja dari Zustand */}
-      <div className="bg-gray-50 p-4 rounded-lg mb-6 border">
-        <h2 className="font-semibold mb-2">Item yang dipesan:</h2>
-        {kasir.keranjang.map((item) => (
-          <div key={item.nama} className="flex justify-between border-b py-2">
-            <span>{item.nama} x{item.qty}</span>
-          </div>
-        ))}
-        <div className="mt-4 font-bold text-lg text-green-700">
-          Total Bayar: Rp {kasir.totalBayar.toLocaleString()}
-        </div>
+    // Mengubah max-w-2xl menjadi 5xl agar lebih lebar
+    <div className="p-6 md:p-10 max-w-5xl mx-auto min-h-screen bg-slate-50/30">
+      <div className="flex justify-between items-center mb-8">
+        <Link
+          href="/"
+          className="text-sm font-medium text-green-600 hover:underline flex items-center gap-2"
+        >
+          <span>←</span> Kembali Belanja Sayur
+        </Link>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+          onClick={() =>
+            confirm("Kosongkan keranjang?") &&
+            keranjang.forEach((i) => HapusBaris(i.nama))
+          }
+        >
+          Reset Keranjang
+        </Button>
       </div>
 
-      {/* Area Form Checkout kamu (Kita akan integrasikan nanti) */}
-      <div className="bg-white p-6 border rounded-xl shadow-sm">
-        <h2 className="font-semibold mb-4 text-gray-700">Alamat Pengiriman di Cirebon</h2>
-        <p className="text-sm text-gray-500 mb-4">Silakan masukkan detail pengiriman agar sayur segera meluncur!</p>
-        
-        {/* Kamu bisa memindahkan isi FormCheckout.tsx ke sini nanti */}
-        <div className="space-y-4">
-           <input className="w-full border p-2 rounded" placeholder="Nama Lengkap" />
-           <textarea className="w-full border p-2 rounded" placeholder="Alamat Lengkap di Cirebon" />
-           <button className="w-full bg-green-600 text-white py-3 rounded-lg font-bold">
-             Konfirmasi Pesanan
-           </button>
-        </div>
+      <h1 className="text-3xl font-black text-slate-900 mb-8">
+        Checkout Pesanan
+      </h1>
+
+      {/* Grid System: Berdampingan di Desktop (md:grid-cols-2) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        {/* KOLOM KIRI: Ringkasan Belanja */}
+        <Card className="shadow-sm border-slate-200">
+          <CardHeader className="border-b bg-white">
+            <CardTitle className="text-lg font-bold text-slate-700">
+              Ringkasan Keranjang
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6 space-y-4 bg-white">
+            {keranjang.length === 0 ? (
+              <p className="text-center text-slate-400 py-10">
+                Keranjang kosong.
+              </p>
+            ) : (
+              keranjang.map((item) => (
+                <div
+                  key={item.nama}
+                  className="flex justify-between items-center pb-4 border-b last:border-0 last:pb-0"
+                >
+                  <div className="flex-1">
+                    <span className="font-bold text-slate-800 block">
+                      {item.nama}
+                    </span>
+                    <button
+                      onClick={() => HapusBaris(item.nama)}
+                      className="text-xs text-red-500 hover:underline"
+                    >
+                      Hapus
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-3 bg-slate-100 p-1 rounded-lg">
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="h-7 w-7 bg-white"
+                      onClick={() => KurangiItem(item.nama)}
+                    >
+                      -
+                    </Button>
+                    <span className="w-4 text-center font-bold text-xs">
+                      {item.qty}
+                    </span>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="h-7 w-7 bg-white"
+                      onClick={() => handleItem(item.nama, item.harga)}
+                    >
+                      +
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </CardContent>
+          <CardFooter className="bg-green-50 flex justify-between items-center py-6 border-t rounded-b-xl">
+            <span className="font-bold text-slate-700">Total:</span>
+            <span className="text-xl font-black text-green-700">
+              Rp {totalBayar.toLocaleString()}
+            </span>
+          </CardFooter>
+        </Card>
+
+        {/* KOLOM KANAN: Data Pengiriman */}
+        <form action={formAction} className="space-y-4">
+          <input
+            name="nama" // Wajib ada name untuk FormData
+            type="text"
+            placeholder="Nama Penerima"
+            className="w-full border p-3 rounded-xl outline-green-500"
+            required
+          />
+          <textarea
+            name="alamat" // Wajib ada name untuk FormData
+            placeholder="Alamat Lengkap di Cirebon"
+            className="w-full border p-3 rounded-xl h-24 outline-green-500"
+            required
+          ></textarea>
+
+          {/* Input tersembunyi untuk mengirim data keranjang */}
+          <input type="hidden" name="items" value={JSON.stringify(keranjang)} />
+          {state?.success && <p className="text-green-600">{state.message}</p>}
+
+          <Button type="submit" disabled={isPending} className="w-full">
+            {isPending ? (
+              <span className="flex items-center gap-2">
+                <span className="animate-spin">🌀</span> Mengirim...
+              </span>
+            ) : (
+              "Konfirmasi Pesanan ➔"
+            )}
+          </Button>
+        </form>
       </div>
     </div>
   );
