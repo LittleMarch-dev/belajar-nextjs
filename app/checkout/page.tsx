@@ -13,11 +13,13 @@ import {
 import { buatPesanan, type FormState } from "./action";
 import { useActionState } from "react"; // Hook baru
 
-
 export default function CheckoutPage() {
   const kasir = useKasir();
   const { keranjang, totalBayar, handleItem, KurangiItem, HapusBaris } = kasir;
-  const [state, formAction, isPending] = useActionState<FormState | null, FormData>(buatPesanan, null);
+  const [state, formAction, isPending] = useActionState<
+    FormState | null,
+    FormData
+  >(buatPesanan, null);
 
   return (
     // Mengubah max-w-2xl menjadi 5xl agar lebih lebar
@@ -112,29 +114,66 @@ export default function CheckoutPage() {
         </Card>
 
         {/* KOLOM KANAN: Data Pengiriman */}
+        {/* KOLOM KANAN: Data Pengiriman */}
         <form action={formAction} className="space-y-4">
-          <input
-            name="nama" // Wajib ada name untuk FormData
-            type="text"
-            placeholder="Nama Penerima"
-            className="w-full border p-3 rounded-xl outline-green-500"
-            required
-          />
-          <textarea
-            name="alamat" // Wajib ada name untuk FormData
-            placeholder="Alamat Lengkap di Cirebon"
-            className="w-full border p-3 rounded-xl h-24 outline-green-500"
-            required
-          ></textarea>
+          {/* Input Nama */}
+          <div className="space-y-1">
+            <input
+              name="nama"
+              type="text"
+              placeholder="Nama Penerima"
+              className={`w-full border p-3 rounded-xl outline-green-500 ${
+                state?.errors?.nama ? "border-red-500" : "border-slate-200"
+              }`}
+            />
+            {state?.errors?.nama && (
+              <p className="text-red-500 text-xs ml-1">
+                {state.errors.nama[0]}
+              </p>
+            )}
+          </div>
+
+          {/* Input Alamat */}
+          <div className="space-y-1">
+            <textarea
+              name="alamat"
+              placeholder="Alamat Lengkap di Cirebon"
+              className={`w-full border p-3 rounded-xl h-24 outline-green-500 ${
+                state?.errors?.alamat ? "border-red-500" : "border-slate-200"
+              }`}
+            ></textarea>
+            {state?.errors?.alamat && (
+              <p className="text-red-500 text-xs ml-1">
+                {state.errors.alamat[0]}
+              </p>
+            )}
+          </div>
 
           {/* Input tersembunyi untuk mengirim data keranjang */}
           <input type="hidden" name="items" value={JSON.stringify(keranjang)} />
-          {state?.success && <p className="text-green-600">{state.message}</p>}
 
-          <Button type="submit" disabled={isPending} className="w-full">
+          {/* Pesan Error Umum untuk Keranjang */}
+          {state?.errors?.items && (
+            <p className="text-red-500 text-sm font-bold text-center bg-red-50 p-2 rounded">
+              {state.errors.items[0]}
+            </p>
+          )}
+
+          {/* Pesan Sukses */}
+          {state?.success && (
+            <div className="bg-green-100 text-green-700 p-4 rounded-xl text-center font-bold animate-bounce">
+              {state.message}
+            </div>
+          )}
+
+          <Button
+            type="submit"
+            disabled={isPending || keranjang.length === 0}
+            className="w-full h-12 bg-green-600 hover:bg-green-700 text-lg font-bold"
+          >
             {isPending ? (
               <span className="flex items-center gap-2">
-                <span className="animate-spin">🌀</span> Mengirim...
+                <span className="animate-spin">🌀</span> Sedang Memproses...
               </span>
             ) : (
               "Konfirmasi Pesanan ➔"

@@ -1,8 +1,11 @@
-"use client"; // WAJIB ada di baris pertama
+"use client";
 
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { hapusPesanan } from "./action";
+import { signOut } from "@/auth"
+import { Button } from "@/components/ui/button"
+import { LogoutButton } from "@/components/admin/LogoutButton"; // Impor ini
 
 interface OrderItem {
   nama: string;
@@ -27,6 +30,10 @@ export default function AdminPage() {
 
   return (
     <div className="p-8 bg-slate-50 min-h-screen font-sans">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Dashboard Admin</h1>
+        <LogoutButton /> {/* Gunakan komponen logout di sini */}
+      </div>
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-slate-800">Dashboard Pesanan</h1>
